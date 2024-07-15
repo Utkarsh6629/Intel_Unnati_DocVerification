@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #444;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+
+        .file-input-wrapper label {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .selected-file {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        button[type=submit] {
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .summary-step {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .final-summary {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        details {
+            margin-bottom: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: #3498db;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .flashes li {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Summarizer</h1>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="file-input-wrapper">
+                <input type="file" name="file" id="file" accept=".pdf,.txt" required>
+                <label for="file">Choose a file</label>
+            </div>
+            <div id="selected-file" class="selected-file"></div>
+            <button type="submit">Upload and Summarize</button>
+        </form>
+
+        {% for step in steps %}
+            <div class="summary-step">
+                <h2>Recursion Level {{ step.level }}</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original Text</th>
+                            <th>Summary</th>
+                            {% if step.level == 1 %}
+                                <th>Clauses</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for piece, summary in zip(step.pieces, step.summaries) %}
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>{{ piece[:500] }}...</p>
+                                    </details>
+                                </td>
+                                <td>{{ summary }}</td>
+                                {% if step.level == 1 %}
+                                    <td>
+                                        <ul>
+                                            {% for clause in get_clauses(summary) %}
+                                                <li>{{ clause }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="final-summary">
+                    <h3>Final Summary for Level {{ step.level }}</h3>
+                    <p>{{ step.final_summary }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0].name;
+            document.getElementById('selected-file').textContent = 'Selected file: ' + fileName;
+        });
+    </script>
+</body>
+</html>
