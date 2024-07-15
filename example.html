@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://127.0.0.1:5000/ -->
+<html lang="en"><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/content/location/location.js" id="eppiocemhmnlbhjplcgkofciiegomcon"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/extend-native-history-api.js"></script><script src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js"></script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Summarizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #444;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+
+        .file-input-wrapper label {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .selected-file {
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        button[type=submit] {
+            background-color: #2ecc71;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .summary-step {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .final-summary {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        details {
+            margin-bottom: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: #3498db;
+        }
+
+        .flashes {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .flashes li {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+<script bis_use="true" type="text/javascript" charset="utf-8" data-bis-config="[&quot;facebook.com/&quot;,&quot;twitter.com/&quot;,&quot;youtube-nocookie.com/embed/&quot;,&quot;//vk.com/&quot;,&quot;//www.vk.com/&quot;,&quot;linkedin.com/&quot;,&quot;//www.linkedin.com/&quot;,&quot;//instagram.com/&quot;,&quot;//www.instagram.com/&quot;,&quot;//www.google.com/recaptcha/api2/&quot;,&quot;//hangouts.google.com/webchat/&quot;,&quot;//www.google.com/calendar/&quot;,&quot;//www.google.com/maps/embed&quot;,&quot;spotify.com/&quot;,&quot;soundcloud.com/&quot;,&quot;//player.vimeo.com/&quot;,&quot;//disqus.com/&quot;,&quot;//tgwidget.com/&quot;,&quot;//js.driftt.com/&quot;,&quot;friends2follow.com&quot;,&quot;/widget&quot;,&quot;login&quot;,&quot;//video.bigmir.net/&quot;,&quot;blogger.com&quot;,&quot;//smartlock.google.com/&quot;,&quot;//keep.google.com/&quot;,&quot;/web.tolstoycomments.com/&quot;,&quot;moz-extension://&quot;,&quot;chrome-extension://&quot;,&quot;/auth/&quot;,&quot;//analytics.google.com/&quot;,&quot;adclarity.com&quot;,&quot;paddle.com/checkout&quot;,&quot;hcaptcha.com&quot;,&quot;recaptcha.net&quot;,&quot;2captcha.com&quot;,&quot;accounts.google.com&quot;,&quot;www.google.com/shopping/customerreviews&quot;,&quot;buy.tinypass.com&quot;,&quot;gstatic.com&quot;,&quot;secureir.ebaystatic.com&quot;,&quot;docs.google.com&quot;,&quot;contacts.google.com&quot;,&quot;github.com&quot;,&quot;mail.google.com&quot;,&quot;chat.google.com&quot;,&quot;audio.xpleer.com&quot;,&quot;keepa.com&quot;,&quot;static.xx.fbcdn.net&quot;,&quot;sas.selleramp.com&quot;,&quot;1plus1.video&quot;,&quot;console.googletagservices.com&quot;,&quot;//lnkd.demdex.net/&quot;,&quot;//radar.cedexis.com/&quot;,&quot;//li.protechts.net/&quot;,&quot;challenges.cloudflare.com/&quot;]" src="chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/executers/vi-tr.js"></script></head>
+<body bis_register="W3sibWFzdGVyIjp0cnVlLCJleHRlbnNpb25JZCI6ImVwcGlvY2VtaG1ubGJoanBsY2drb2ZjaWllZ29tY29uIiwiYWRibG9ja2VyU3RhdHVzIjp7IkRJU1BMQVkiOiJkaXNhYmxlZCIsIkZBQ0VCT09LIjoiZGlzYWJsZWQiLCJUV0lUVEVSIjoiZGlzYWJsZWQiLCJSRURESVQiOiJkaXNhYmxlZCIsIlBJTlRFUkVTVCI6ImRpc2FibGVkIiwiSU5TVEFHUkFNIjoiZGlzYWJsZWQiLCJMSU5LRURJTiI6ImRpc2FibGVkIiwiQ09ORklHIjoiZGlzYWJsZWQifSwidmVyc2lvbiI6IjIuMC4xNSIsInNjb3JlIjoyMDAxNX1d" __processed_21fc23ec-984e-4c76-8eeb-7fa45e7d08c7__="true">
+    <div class="container" bis_skin_checked="1">
+        <h1>Text Summarizer</h1>
+
+        
+            
+        
+
+        <form method="post" enctype="multipart/form-data">
+            <div class="file-input-wrapper" bis_skin_checked="1">
+                <input type="file" name="file" id="file" accept=".pdf,.txt" required="">
+                <label for="file">Choose a file</label>
+            </div>
+            <div id="selected-file" class="selected-file" bis_skin_checked="1"></div>
+            <button type="submit">Upload and Summarize</button>
+        </form>
+
+        
+            <div class="summary-step" bis_skin_checked="1">
+                <h2>Recursion Level 1</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original Text</th>
+                            <th>Summary</th>
+                            
+                                <th>Clauses</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr>
+                                <td>
+                                    <details open="">
+                                        <summary>Show/Hide</summary>
+                                        <p>Exhibit 28 ( h ) ( 9 ) RESTATED NET INVESTMENT INCOME MAINTENANCE AGREEMENT SECURIAN FUNDS TRUST RESTATED NET INVESTMENT INCOME MAINTENANCE AGREEMENT , effective May 1 , 2012 , Advantus Capital Management , Inc. ( `` Investment Adviser '' ) , Securian Financial Services , Inc. ( `` Underwriter '' ) Securian Funds Trust ( `` Trust '' ) , Delaware statutory trust , behalf Trust 's Advantus Money Market Fund ( `` Fund '' ) . WHEREAS , pursuant Agreement Plan Reorganization approved Board Trustees T...</p>
+                                    </details>
+                                </td>
+                                <td>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, effective May 1, 2012, involves Advantus Capital Management, Inc. as the Investment Adviser and Securian Financial Services, Inc. as the Underwriter. The agreement concerns the Advantus Money Market Fund within the Trust. This agreement is a reorganization of prior agreements dating back to February 1, 2009. The parties involved in this agreement desire to adopt and set forth these new terms.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>- Main Clause: Restated Net Investment Income Maintenance Agreement for Securian Funds Trust</li>
+                                            
+                                                <li>- Sub Clause: Effective May 1, 2012</li>
+                                            
+                                                <li>- Main Clause: Advantus Capital Management, Inc. as the Investment Adviser</li>
+                                            
+                                                <li>- Sub Clause: Securian Financial Services, Inc. as the Underwriter</li>
+                                            
+                                                <li>- Main Clause: Agreement concerns the Advantus Money Market Fund within the Trust</li>
+                                            
+                                                <li>- Sub Clause: Reorganization of prior agreements dating back to February 1, 2009</li>
+                                            
+                                                <li>- Main Clause: Parties involved in this agreement desire to adopt and set forth these new terms</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>ment '' ) , pursuant Investment Adviser render investment advisory services Fund compensation based value average daily net assets Fund ; WHEREAS , Trust Underwriter entered Underwriting Distribution Agreement dated May 1 , 2012 ( `` Underwriting Agreement '' ) pursuant Underwriter acts principal underwriter Fund , receives compensation thereunder pursuant Fund 's Rule 12b-1 Plan ; WHEREAS , Trust Investment Adviser determined appropriate best interests Fund shareholders maintain Fund 's daily `...</p>
+                                    </details>
+                                </td>
+                                <td>The document discusses an agreement related to the compensation of an investment adviser for a fund based on its average daily net assets. It also mentions that underwriters have entered into an underwriting agreement and that the investment adviser will waive their advisory fee if the fund's net investment income is zero. The terms 'fund investment income' and 'fund operating expenses' are defined, with the former including interest dividends, net foreign withholding taxes, and income from securities lending activities, while the latter encompasses various fees and expenses incurred by the fund.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>1. Agreement on compensation of an investment adviser for a fund based on its average daily net assets.</li>
+                                            
+                                                <li>2. Underwriters have entered into an underwriting agreement.</li>
+                                            
+                                                <li>3. Investment adviser will waive their advisory fee if the fund's net investment income is zero.</li>
+                                            
+                                                <li>4. Definition of 'fund investment income': interest dividends, net foreign withholding taxes, and income from securities lending activities.</li>
+                                            
+                                                <li>5. Definition of 'fund operating expenses': various fees and expenses incurred by the fund.</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>es every character incurred Fund , including limited investment advisory fees Investment Adviser ( excluding interest , taxes , brokerage commissions expenditures capitalized accordance generally accepted accounting principles extraordinary expenses incurred ordinary course Fund 's business ) . Fund Operating Expenses include `` acquired fund fees expenses '' defined SEC Form N-1A , may amended time time . 1.4 Method Computing Expense Waiver . determine Expense Waiver ( Investment Adviser 's lia...</p>
+                                    </details>
+                                </td>
+                                <td>The text discusses the calculation of Fund Operating Expenses and how they are affected by investment advisory fees. These expenses include various costs such as interest, taxes, and brokerage commissions. The text also mentions a method for computing an Expense Waiver, which involves reducing the advisory fee when necessary to bring the Net Investment Income to zero. Additionally, it explains that the Investment Adviser has the right to recover the waived amount if the Fund's Net Investment Income exceeds zero, unless they have expressly exercised their right to waive a portion of the Expense Waiver.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>1. Calculation of Fund Operating Expenses</li>
+                                            
+                                                <li>a) Expenses include various costs such as interest, taxes, and brokerage commissions</li>
+                                            
+                                                <li>2. Method for computing an Expense Waiver</li>
+                                            
+                                                <li>a) Reducing the advisory fee when necessary to bring the Net Investment Income to zero</li>
+                                            
+                                                <li>3. Conditions for recovering waived amount</li>
+                                            
+                                                <li>a) If the Fund's Net Investment Income exceeds zero, unless they have expressly exercised their right to waive a portion of the Expense Waiver</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>d right recover portion Expense Waiver day , case portion Expense Waiver elected Investment Adviser recovery day shall due payable . , extent , payment Fund Investment Adviser Expense Waiver would cause Fund 's Net Investment Income fall zero , payment shall deferred date connection obligation Investment Adviser maintain Fund 's Net Investment Income set forth section 1 herein , Underwriter may waive Rule 12b-1 fees contemplated Underwriting Agreement , shall rights reimbursed Fund Investment Ad...</p>
+                                    </details>
+                                </td>
+                                <td>This text discusses the recovery of an 'Expense Waiver' and its connection to investment income. The Expense Waiver can be elected by the Investment Adviser, and if it's recovered, it could cause the Fund's Net Investment Income to fall to zero. Payments will be deferred and may be reimbursed to the Fund or the Investment Adviser based on specific conditions set forth in the text. Furthermore, the text mentions an Underwriter that can waive Rule 12b-1 fees, and a continuing effect period of one year after the execution of the agreement. Finally, it discusses the termination of the agreement under certain circumstances and the recovery of the Expense Waiver within three years.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>1. The recovery of an 'Expense Waiver' can be elected by the Investment Adviser.</li>
+                                            
+                                                <li>2. If the Expense Waiver is recovered, it could cause the Fund's Net Investment Income to fall to zero.</li>
+                                            
+                                                <li>3. Payments will be deferred and may be reimbursed to the Fund or the Investment Adviser based on specific conditions set forth in the text.</li>
+                                            
+                                                <li>4. The Underwriter can waive Rule 12b-1 fees.</li>
+                                            
+                                                <li>5. There is a continuing effect period of one year after the execution of the agreement.</li>
+                                            
+                                                <li>6. The agreement may be terminated under certain circumstances.</li>
+                                            
+                                                <li>7. The recovery of the Expense Waiver will occur within three years.</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>mount unrecovered Expense Waiver Prior Agreements , provided Investment Adviser 's right receive payment shall also expire three years day effected waiver , made payment reimbursement . 1.6 Payment . Investment Adviser required reimburse Fund , Investment Adviser shall make payment within 30 days month-end amount due Fund month . Fund required pay Investment Adviser Expense Waiver , Fund shall make payment within 30 days month-end . Reimbursements Fund Expense Waiver shall include additional cha...</p>
+                                    </details>
+                                </td>
+                                <td>This text outlines the terms of an expense waiver agreement between an Investment Adviser and a Fund. Key points include payment reimbursement within 30 days, additional charges such as interest included in reimbursements, and an operating expense limit where the Fund's annual operations must not exceed 1.25% of its average daily net assets. The document also covers underwriter involvement, term termination agreements, miscellaneous provisions including captions and definitions, and a statement on interpretation that nothing within shall require any party to take action contrary to applicable laws or regulations.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>- Payment reimbursement within 30 days:</li>
+                                            
+                                                <li>- Additional charges such as interest included in reimbursements</li>
+                                            
+                                                <li>- Operating expense limit:</li>
+                                            
+                                                <li>- Fund's annual operations must not exceed 1.25% of its average daily net assets</li>
+                                            
+                                                <li>- Underwriter involvement:</li>
+                                            
+                                                <li>- Term termination agreements:</li>
+                                            
+                                                <li>- Miscellaneous provisions including captions and definitions:</li>
+                                            
+                                                <li>- Statement on interpretation that nothing within shall require any party to take action contrary to applicable laws or regulations:</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>nitions . question interpretation term provision Agreement , including , limited investment advisory Rule 12b-1 fee , computations net asset values , allocation expenses , counterpart otherwise derived terms provisions Advisory Agreement , Underwriting Agreement , 1940 Act , shall meaning resolved reference Advisory Agreement , Underwriting Agreement , 1940 Act . SECURIAN FUNDS TRUST : /s/ David M. Kuplic Name : David M. Kuplic Title : President ADVANTUS CAPITAL MANAGEMENT , INC. : /s/ Robert L....</p>
+                                    </details>
+                                </td>
+                                <td>The text discusses various agreements and provisions related to investment advisory services, including Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It also mentions key individuals from three different organizations: David M. Kuplic from Securian Funds Trust, Robert L. Senkler from Advantus Capital Management, Inc., and George I. Connolly from Securian Financial Services, Inc.</td>
+                                
+                                    <td>
+                                        <ul>
+                                            
+                                                <li>1. Agreement to provide investment advisory services.</li>
+                                            
+                                                <li>a. Rule 12b-1 fees will be deducted from fund assets.</li>
+                                            
+                                                <li>b. Net asset value computations will be conducted daily.</li>
+                                            
+                                                <li>c. Expenses will be allocated according to the counterparty relationships.</li>
+                                            
+                                                <li>2. Key individual involvement and responsibilities:</li>
+                                            
+                                                <li>a. David M. Kuplic - overseeing compliance and regulatory affairs for Securian Funds Trust.</li>
+                                            
+                                                <li>b. Robert L. Senkler - managing investment portfolios and providing financial advice at Advantus Capital Management, Inc.</li>
+                                            
+                                                <li>c. George I. Connolly - handling client accounts and ensuring customer satisfaction at Securian Financial Services, Inc.</li>
+                                            
+                                        </ul>
+                                    </td>
+                                
+                            </tr>
+                        
+                    </tbody>
+                </table>
+
+                <div class="final-summary" bis_skin_checked="1">
+                    <h3>Final Summary for Level 1</h3>
+                    <p>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, effective May 1, 2012, involves Advantus Capital Management, Inc. as the Investment Adviser and Securian Financial Services, Inc. as the Underwriter. The agreement concerns the Advantus Money Market Fund within the Trust. This agreement is a reorganization of prior agreements dating back to February 1, 2009. The parties involved in this agreement desire to adopt and set forth these new terms. The document discusses an agreement related to the compensation of an investment adviser for a fund based on its average daily net assets. It also mentions that underwriters have entered into an underwriting agreement and that the investment adviser will waive their advisory fee if the fund's net investment income is zero. The terms 'fund investment income' and 'fund operating expenses' are defined, with the former including interest dividends, net foreign withholding taxes, and income from securities lending activities, while the latter encompasses various fees and expenses incurred by the fund. The text discusses the calculation of Fund Operating Expenses and how they are affected by investment advisory fees. These expenses include various costs such as interest, taxes, and brokerage commissions. The text also mentions a method for computing an Expense Waiver, which involves reducing the advisory fee when necessary to bring the Net Investment Income to zero. Additionally, it explains that the Investment Adviser has the right to recover the waived amount if the Fund's Net Investment Income exceeds zero, unless they have expressly exercised their right to waive a portion of the Expense Waiver. This text discusses the recovery of an 'Expense Waiver' and its connection to investment income. The Expense Waiver can be elected by the Investment Adviser, and if it's recovered, it could cause the Fund's Net Investment Income to fall to zero. Payments will be deferred and may be reimbursed to the Fund or the Investment Adviser based on specific conditions set forth in the text. Furthermore, the text mentions an Underwriter that can waive Rule 12b-1 fees, and a continuing effect period of one year after the execution of the agreement. Finally, it discusses the termination of the agreement under certain circumstances and the recovery of the Expense Waiver within three years. This text outlines the terms of an expense waiver agreement between an Investment Adviser and a Fund. Key points include payment reimbursement within 30 days, additional charges such as interest included in reimbursements, and an operating expense limit where the Fund's annual operations must not exceed 1.25% of its average daily net assets. The document also covers underwriter involvement, term termination agreements, miscellaneous provisions including captions and definitions, and a statement on interpretation that nothing within shall require any party to take action contrary to applicable laws or regulations. The text discusses various agreements and provisions related to investment advisory services, including Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It also mentions key individuals from three different organizations: David M. Kuplic from Securian Funds Trust, Robert L. Senkler from Advantus Capital Management, Inc., and George I. Connolly from Securian Financial Services, Inc.</p>
+                </div>
+            </div>
+        
+            <div class="summary-step" bis_skin_checked="1">
+                <h2>Recursion Level 2</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original Text</th>
+                            <th>Summary</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, effective May 1, 2012, involves Advantus Capital Management, Inc. as the Investment Adviser and Securian Financial Services, Inc. as the Underwriter. The agreement concerns the Advantus Money Market Fund within the Trust. This agreement is a reorganization of prior agreements dating back to February 1, 2009. The parties involved in this agreement desire to adopt and set forth these new terms. The document discusse...</p>
+                                    </details>
+                                </td>
+                                <td>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, dated May 1, 2012, outlines terms between Advantus Capital Management (Investment Adviser) and Securian Financial Services (Underwriter). This agreement relates to the Advantus Money Market Fund within the trust. The document discusses an arrangement where the investment adviser's compensation is based on the fund's average daily net assets, along with underwriters' underwriting agreement. It mentions that if the fund's net investment income is zero, the investment adviser will waive their advisory fee. The text defines 'fund investment income' and 'fund operating expenses,' detailing their components. Furthermore, it discusses how fund operating expenses are affected by investment advisory fees and provides a method for computing an Expense Waiver by reducing the advisory fee to bring Net Investment Income to zero.</td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>which involves reducing the advisory fee when necessary to bring the Net Investment Income to zero. Additionally, it explains that the Investment Adviser has the right to recover the waived amount if the Fund's Net Investment Income exceeds zero, unless they have expressly exercised their right to waive a portion of the Expense Waiver. This text discusses the recovery of an 'Expense Waiver' and its connection to investment income. The Expense Waiver can be elected by the Investment Adviser, and ...</p>
+                                    </details>
+                                </td>
+                                <td>This text discusses an expense waiver agreement between an Investment Adviser and a Fund. Key points include reducing advisory fees to bring Net Investment Income to zero, recovering waived amounts if Net Investment Income exceeds zero, deferring payments and reimbursing based on specific conditions, an Underwriter waiving Rule 12b-1 fees, a one-year continuing effect period, termination of the agreement under certain circumstances, and recovery of the Expense Waiver within three years. The agreement also covers payment reimbursement within 30 days, additional charges like interest included in reimbursements, and an operating expense limit of 1.25% of the Fund's average daily net assets.</td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p> net assets. The document also covers underwriter involvement, term termination agreements, miscellaneous provisions including captions and definitions, and a statement on interpretation that nothing within shall require any party to take action contrary to applicable laws or regulations. The text discusses various agreements and provisions related to investment advisory services, including Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It als...</p>
+                                    </details>
+                                </td>
+                                <td>The document outlines several agreements and provisions related to investment advisory services such as Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It also addresses underwriter involvement, term termination agreements, and miscellaneous provisions including captions and definitions. Additionally, the text states that nothing within should require any party to take action contrary to applicable laws or regulations. Key individuals mentioned are David M. Kuplic from Securian Funds Trust, Robert L. Senkler from Advantus Capital Management, Inc., and George I. Connolly from Securian Financial Services, Inc.</td>
+                                
+                            </tr>
+                        
+                    </tbody>
+                </table>
+
+                <div class="final-summary" bis_skin_checked="1">
+                    <h3>Final Summary for Level 2</h3>
+                    <p>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, dated May 1, 2012, outlines terms between Advantus Capital Management (Investment Adviser) and Securian Financial Services (Underwriter). This agreement relates to the Advantus Money Market Fund within the trust. The document discusses an arrangement where the investment adviser's compensation is based on the fund's average daily net assets, along with underwriters' underwriting agreement. It mentions that if the fund's net investment income is zero, the investment adviser will waive their advisory fee. The text defines 'fund investment income' and 'fund operating expenses,' detailing their components. Furthermore, it discusses how fund operating expenses are affected by investment advisory fees and provides a method for computing an Expense Waiver by reducing the advisory fee to bring Net Investment Income to zero. This text discusses an expense waiver agreement between an Investment Adviser and a Fund. Key points include reducing advisory fees to bring Net Investment Income to zero, recovering waived amounts if Net Investment Income exceeds zero, deferring payments and reimbursing based on specific conditions, an Underwriter waiving Rule 12b-1 fees, a one-year continuing effect period, termination of the agreement under certain circumstances, and recovery of the Expense Waiver within three years. The agreement also covers payment reimbursement within 30 days, additional charges like interest included in reimbursements, and an operating expense limit of 1.25% of the Fund's average daily net assets. The document outlines several agreements and provisions related to investment advisory services such as Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It also addresses underwriter involvement, term termination agreements, and miscellaneous provisions including captions and definitions. Additionally, the text states that nothing within should require any party to take action contrary to applicable laws or regulations. Key individuals mentioned are David M. Kuplic from Securian Funds Trust, Robert L. Senkler from Advantus Capital Management, Inc., and George I. Connolly from Securian Financial Services, Inc.</p>
+                </div>
+            </div>
+        
+            <div class="summary-step" bis_skin_checked="1">
+                <h2>Recursion Level 3</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original Text</th>
+                            <th>Summary</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, dated May 1, 2012, outlines terms between Advantus Capital Management (Investment Adviser) and Securian Financial Services (Underwriter). This agreement relates to the Advantus Money Market Fund within the trust. The document discusses an arrangement where the investment adviser's compensation is based on the fund's average daily net assets, along with underwriters' underwriting agreement. It mentions that if the ...</p>
+                                    </details>
+                                </td>
+                                <td>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, dated May 1, 2012, establishes terms between Advantus Capital Management (Investment Adviser) and Securian Financial Services (Underwriter). It concerns the Advantus Money Market Fund within the trust. The document outlines an arrangement where the investment adviser's compensation is based on the fund's average daily net assets, along with underwriters' underwriting agreement. If the fund's net investment income is zero, the investment adviser will waive their advisory fee. The text defines 'fund investment income' and 'fund operating expenses,' detailing their components. Furthermore, it discusses how fund operating expenses are affected by investment advisory fees and provides a method for computing an Expense Waiver by reducing the advisory fee to bring Net Investment Income to zero. This agreement includes key points such as recovering waived amounts if Net Investment Income exceeds zero, deferring payments and reimbursing based on specific conditions, a one-year continuing effect period, termination of the agreement under certain circumstances, and recovery of the Expense Waiver within three years. The agreement also covers payment reimbursement within 30 days and additional charges like interest included.</td>
+                                
+                            </tr>
+                        
+                            <tr>
+                                <td>
+                                    <details>
+                                        <summary>Show/Hide</summary>
+                                        <p>very of the Expense Waiver within three years. The agreement also covers payment reimbursement within 30 days, additional charges like interest included in reimbursements, and an operating expense limit of 1.25% of the Fund's average daily net assets. The document outlines several agreements and provisions related to investment advisory services such as Rule 12b-1 fees, net asset value computations, expense allocations, and counterparty relationships. It also addresses underwriter involvement, t...</p>
+                                    </details>
+                                </td>
+                                <td>This text discusses an agreement covering various provisions related to investment advisory services within a 3-year timeframe. It includes payment reimbursement deadlines, interest inclusion in reimbursements, and an operating expense limit of 1.25% of the Fund's average daily net assets. The document also addresses underwriter involvement, term termination agreements, and miscellaneous provisions such as captions and definitions. Additionally, it states that no party should take action contrary to applicable laws or regulations. Key individuals mentioned are David M. Kuplic, Robert L. Senkler, and George I. Connolly.</td>
+                                
+                            </tr>
+                        
+                    </tbody>
+                </table>
+
+                <div class="final-summary" bis_skin_checked="1">
+                    <h3>Final Summary for Level 3</h3>
+                    <p>The Restated Net Investment Income Maintenance Agreement for Securian Funds Trust, dated May 1, 2012, outlines terms between Advantus Capital Management (Investment Adviser) and Securian Financial Services (Underwriter). It focuses on the Advantus Money Market Fund within the trust. The investment adviser's compensation is based on the fund's average daily net assets, with underwriters' underwriting agreement. If the fund's net investment income is zero, the investment adviser will waive their advisory fee. The text defines 'fund investment income' and 'fund operating expenses,' discussing how they are affected by investment advisory fees. It also provides a method for computing an Expense Waiver by reducing the advisory fee to bring Net Investment Income to zero. The agreement includes provisions such as recovering waived amounts if Net Investment Income exceeds zero, deferring payments and reimbursing based on specific conditions, a one-year continuing effect period, termination of the agreement under certain circumstances, and recovery of the Expense Waiver within three years. Payment reimbursement deadlines, interest inclusion in reimbursements, and an operating expense limit of 1.25% of the Fund's average daily net assets are also discussed. The document addresses underwriter involvement, term termination agreements, and miscellaneous provisions such as captions and definitions. It states that no party should take action contrary to applicable laws or regulations. Key individuals mentioned include David M. Kuplic, Robert L. Senkler, and George I. Connolly.</p>
+                </div>
+            </div>
+        
+    </div>
+
+    <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0].name;
+            document.getElementById('selected-file').textContent = 'Selected file: ' + fileName;
+        });
+    </script>
+
+</body></html>
